@@ -1,0 +1,49 @@
+# Reference blueprint. Add secrets through the Render dashboard.
+services:
+  - type: web
+    name: nuke-bot-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: WORKER_SECRET
+        sync: false
+      - key: BOOTSTRAP_ADMIN_EMAIL
+        sync: false
+      - key: BOOTSTRAP_ADMIN_PASSWORD
+        sync: false
+
+  - type: worker
+    name: nuke-bot-worker
+    runtime: python
+    rootDir: discord-bot
+    buildCommand: pip install -r requirements.txt
+    startCommand: python bot.py
+    envVars:
+      - key: DISCORD_TOKEN
+        sync: false
+      - key: API_BASE_URL
+        sync: false
+      - key: WORKER_SECRET
+        sync: false
+      - key: TEST_GUILD_ID
+        sync: false
+      - key: TEST_CHANNEL_ID
+        sync: false
+
+  - type: static
+    name: nuke-bot-web
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false
