@@ -109,6 +109,19 @@ async def execute_command(item):
             else:
                 result = "No active test simulation."
 
+        elif name == "announcement":
+            if not TEST_GUILD_ID or not TEST_CHANNEL_ID:
+                raise ValueError("Set TEST_GUILD_ID and TEST_CHANNEL_ID first.")
+            guild = bot.get_guild(TEST_GUILD_ID)
+            channel = bot.get_channel(TEST_CHANNEL_ID)
+            if not guild or not channel or channel.guild.id != TEST_GUILD_ID:
+                raise ValueError("Configured channel must belong to the configured private test server.")
+            message = str(item.get("payload", {}).get("message", "")).strip()
+            if not message or len(message) > 500:
+                raise ValueError("Announcement must be 1–500 characters.")
+            await channel.send(message)
+            result = "Announcement sent once to the configured private test channel."
+
         elif name == "testspam":
             if not TEST_GUILD_ID or not TEST_CHANNEL_ID:
                 raise ValueError("Set TEST_GUILD_ID and TEST_CHANNEL_ID first.")
