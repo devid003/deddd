@@ -47,13 +47,19 @@ app.get("/api/dashboard", requireAuth, async (_req, res) => {
   res.json({ queued, recent });
 });
 
-const allowedCommands = new Set(["ping", "status", "serverinfo", "testspam", "stop"]);
+const allowedCommands = new Set(["ping", "status", "serverinfo", "testspam", "stop", "announcement"]);
 app.post("/api/commands", requireAuth, async (req, res) => {
   const name = String(req.body.name || "").toLowerCase();
   if (!allowedCommands.has(name)) return res.status(400).json({ error: "Unsupported command" });
-  if (name === "testspam" && req.user.role !== "admin")
-    return res.status(403).json({ error: "Admin access required for test simulation" });
-  const payload = name === "testspam" ? { count: Math.min(5, Math.max(1, Number(req.body.count) || 3)) } : {};
+  if (["testspam", "announcement"].includes(name) && req.user.role !== "admin")
+    return res.status(403).json({ error: "Admin access required" });
+  let payload = {};
+  if (name === "testspam") payload = { count: Math.min(5, Math.max(1, Number(req.body.count) || 3)) };
+  if (name === "announcement") {
+    const message = String(req.body.message || "").trim();
+    if (!message || message.length > 500) return res.status(400).json({ error: "Announcement must be 1–500 characters." });
+    payload = { message };
+  }
   const command = await Command.create({ name, requestedBy: req.user.email, payload });
   res.status(202).json({ message: "Command queued", commandId: command.id });
 });
