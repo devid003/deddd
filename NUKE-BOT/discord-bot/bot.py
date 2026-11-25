@@ -122,6 +122,35 @@ async def execute_command(item):
             await channel.send(message)
             result = "Announcement sent once to the configured private test channel."
 
+        elif name == "category_setup":
+            if not TEST_GUILD_ID:
+                raise ValueError("Set TEST_GUILD_ID first.")
+            guild = bot.get_guild(TEST_GUILD_ID)
+            if not guild:
+                raise ValueError("Configured private test server is unavailable.")
+            # Create only one clearly labeled test category and one channel.
+            existing = discord.utils.get(guild.categories, name="NUKE BOT TEST")
+            category = existing or await guild.create_category(
+                "NUKE BOT TEST", reason="Admin-requested capstone test setup"
+            )
+            channel = discord.utils.get(category.text_channels, name="test-messages")
+            created_channel = False
+            if not channel:
+                channel = await guild.create_text_channel(
+                    "test-messages", category=category,
+                    reason="Admin-requested capstone test setup"
+                )
+                created_channel = True
+            await channel.send(
+                "NUKE BOT test area is ready. This is a single setup notice "
+                "for authorized testing; no bulk messages were sent."
+            )
+            result = (
+                f"Test setup ready: #{channel.name} in {category.name}. "
+                f"Channel {'created' if created_channel else 'already existed'}; "
+                "one setup notice sent."
+            )
+
         elif name == "testspam":
             if not TEST_GUILD_ID or not TEST_CHANNEL_ID:
                 raise ValueError("Set TEST_GUILD_ID and TEST_CHANNEL_ID first.")
