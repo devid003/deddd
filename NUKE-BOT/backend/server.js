@@ -1,4 +1,4 @@
-import "dotenv/config";
+﻿import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
@@ -9,6 +9,7 @@ import { User, Command } from "./models.js";
 import { requireAuth, requireAdmin } from "./auth.js";
 
 const app = express();
+app.set('trust proxy', 1);
 app.use(express.json({ limit: "32kb" }));
 app.use(cors({ origin: process.env.FRONTEND_ORIGIN?.split(",") || "http://localhost:5173" }));
 app.use("/api/auth", rateLimit({ windowMs: 15 * 60 * 1000, limit: 30 }));
@@ -82,3 +83,4 @@ app.post("/internal/commands/:id/result", requireWorker, async (req, res) => {
 const port = process.env.PORT || 4000;
 await mongoose.connect(process.env.MONGODB_URI);
 app.listen(port, () => console.log(`NUKE BOT API listening on ${port}`));
+
