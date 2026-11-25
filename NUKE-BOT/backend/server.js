@@ -47,11 +47,11 @@ app.get("/api/dashboard", requireAuth, async (_req, res) => {
   res.json({ queued, recent });
 });
 
-const allowedCommands = new Set(["ping", "status", "serverinfo", "testspam", "stop", "announcement"]);
+const allowedCommands = new Set(["ping", "status", "serverinfo", "testspam", "stop", "announcement", "category_setup"]);
 app.post("/api/commands", requireAuth, async (req, res) => {
   const name = String(req.body.name || "").toLowerCase();
   if (!allowedCommands.has(name)) return res.status(400).json({ error: "Unsupported command" });
-  if (["testspam", "announcement"].includes(name) && req.user.role !== "admin")
+  if (["testspam", "announcement", "category_setup"].includes(name) && req.user.role !== "admin")
     return res.status(403).json({ error: "Admin access required" });
   let payload = {};
   if (name === "testspam") payload = { count: Math.min(5, Math.max(1, Number(req.body.count) || 3)) };
